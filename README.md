@@ -10,9 +10,15 @@ Project consists of the following two parts:
 
 ### Data warehouse schema
 
+Entity relationships diagram of the source database (*wheelie* database) is shown below. 
+
+<p align="center">
+    <img src="DWH/JPG/wheelie_source_db.png">
+</p>
+
 ### Tableau dashboards
 
-Below there is a preview of dashboards in Tableau (files where exported to pdf, so filters on the right pane look slightly distorted). Tableau files (*.twb, *.hyper) can be found in the repository. All dashboards are fully interactive.
+Below there is a preview of dashboards in Tableau. Tableau files (*.twb, *.hyper) can be found in the repository. All dashboards are fully interactive.
 
 1. Customer analysis - map with customer countries and rental store locations. 
 
