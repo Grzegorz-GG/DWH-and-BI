@@ -11,3 +11,12 @@ Project consists of the following two parts:
  
 ### Data warehouse schema
 
+### Tableau dashboards
+
+Below there is a preview of dashboards in Tableau (files where exported to pdf, so filters on the left pane look slightly distorted). Tableau files (*.twb, *.hyper) can be found in the repository.
+
+1. Customer analysis - map with customer countries and rental store locations
+
+![This is an image](/Map.JPG)
+
+2. Customer analysis - charts for rental stores
