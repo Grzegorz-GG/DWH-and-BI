@@ -2,7 +2,7 @@
 Project consists of the following two parts:
 + Data warehouse project for a car rental company.
   + <p align="justify"> Designing simplified data warehouse based on Kimball's principles (define grain, dimensions, facts etc.). I used Microsoft SQL Server to create data warehouse structure. </p>
-  + <p align="justify"> Creating ETL pipelines to populate data warehouse. ETL process includes: full loading of dimension tables, incremental load of fact tables and SCD2 (<i>Slowly Changing Dimension 2</i>) on dim_Store. Source data was extracted from MariaDB database called <i>wheelie</i>. I used SSIS to populate data warehouse. </p>
+  + <p align="justify"> Creating ETL pipelines to populate data warehouse. ETL process includes: full loading of dimension tables, incremental load of the fact table and SCD2 (<i>Slowly Changing Dimension 2</i>) on dim_store. Source data was extracted from MariaDB database called <i>wheelie</i>. I used SSIS to populate data warehouse. </p>
 + Creating dashboards in Tableau which provide answers to the following questions (related to the customer analysis):
     + <p align="justify"> Who are customers of our car rental company i.e where they come from, where they rent cars, how old they are?</p>
     + <p align="justify"> What type of transactions they perform i.e. type of rented cars, rental duration, age/production year of rented cars?</p>
@@ -10,11 +10,29 @@ Project consists of the following two parts:
 
 ### Data warehouse schema
 
-Entity relationships diagram of the source database (*wheelie* database) is shown below. 
+1. Entity relationships diagram of the source database (*wheelie* database) is shown below. 
 
 <p align="center">
     <img src="DWH/JPG/wheelie_source_db.png">
 </p>
+
+2. Schema for data warehouse - dimensions and fact tables. 
+
+<p align="center">
+    <img src="DWH/JPG/DWH_schema.png">
+</p>
+
+<p align = "justify"> As mentioned above fact_rental is incrementally loaded. SCD2 is placed on dim_store.</p>
+<p align = "justify"> One more point to note - to avoid many to many relationship I applied hash function. I used staging table stg_inventory_equipment in the warehouse to hold all pairs of (inventory_id, equipment_id) from the source database (stg_inventory_equipment is loaded 1:1 from <i>wheelie</i> database). Given inventory_id can have many different equipment_ids. Therefore, I applied hash function to combine equipment_ids for a given inventory_id in one unique string: </p>
+<i>
+SELECT <br>
+stg.inventory_id,<br>
+CONVERT(NVARCHAR(50), HashBytes('MD5',  STRING_AGG(stg.equipment_id, '|')), 2) equipment_group_key<br>
+FROM [dbo].[stg_inventory_equipment] as stg <br>
+GROUP BY inventory_id<br>
+ </i>
+<br>
+<p>Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship.</p>
 
 ### Tableau dashboards
 
