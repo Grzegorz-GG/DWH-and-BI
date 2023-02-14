@@ -32,7 +32,7 @@ FROM [dbo].[stg_inventory_equipment] as stg <br>
 GROUP BY inventory_id<br>
  </i>
 <br>
-<p>Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship.</p>
+<p aling="justify">Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship.</p>
 
 ### Tableau dashboards
 
