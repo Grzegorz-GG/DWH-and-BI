@@ -2,7 +2,7 @@
 Project consists of the following two parts:
 + Data warehouse project for a car rental company.
   + <p align="justify"> Designing simplified data warehouse based on Kimball's principles (define grain, dimensions, facts etc.). I used Microsoft SQL Server to create data warehouse structure. </p>
-  + <p align="justify"> Creating ETL pipelines to populate data warehouse. ETL process includes: full loading of dimension tables, incremental load of the fact table and SCD2 (<i>Slowly Changing Dimension 2</i>) on dim_store. Source data was extracted from MariaDB database called <i>wheelie</i>. I used SSIS to populate data warehouse. </p>
+  + <p align="justify"> Creating ETL pipelines to populate data warehouse. ETL process includes: full loading of dimension tables, incremental load of the fact table and SCD2 (<i>Slowly Changing Dimension 2</i>) on dim_store. Source data was extracted from MariaDB database called <i>wheelie</i>. I used SSIS (<i>SQL Server Integration Services</i>) to populate data warehouse. </p>
 + Creating dashboards in Tableau which provide answers to the following questions (related to the customer analysis):
     + <p align="justify"> Who are customers of our car rental company i.e where they come from, where they rent cars, how old they are?</p>
     + <p align="justify"> What type of transactions they perform i.e. type of rented cars, rental duration, age/production year of rented cars?</p>
@@ -32,7 +32,7 @@ FROM [dbo].[stg_inventory_equipment] as stg <br>
 GROUP BY inventory_id<br>
  </i>
 <br>
-<p aling="justify">Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship.</p>
+<p aling="justify">Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship. Date table dim_date (not shown above) is populated directly from a SQL script.</p>
 
 ### Tableau dashboards
 
