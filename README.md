@@ -52,3 +52,15 @@ Below there is a preview of dashboards in Tableau. Tableau files (*.twb, *.hyper
 3.Customer analysis - charts for car types. Bar chart include "drill down" option to show the hierarchy: rental store country / car producer > car model. Percentage for each store country/car producer is counted with the aid of LOD (*Level of Detail Expression*).
 
 ![This is an image](Tableau/Car-types.JPG)
+
+### R report
+
+<p aling="justify">Report uses R/Quarto, ggplot2 and plotly. It summarizes the results for service costs and number of service operations. Code can be found in the repository.</p>
+
+<p align="center">
+<img src="R/JPG/service_costs.JPG">
+</p>
+
+<p align="center">
+<img src="R/JPG/number_of_services.JPG">
+</p>
