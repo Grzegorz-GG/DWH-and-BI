@@ -69,5 +69,4 @@ Below there is a preview of dashboards in Tableau. Tableau files (*.twb, *.hyper
 
 <p align="center">
 <img src="R/JPG/number_of_services.JPG">
-
 </p>
