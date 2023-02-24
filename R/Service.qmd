@@ -1,0 +1,346 @@
+---
+title: "Service analysis"
+format:
+  html:
+    toc: true
+    embed-resources: true
+    page-layout: full
+editor: visual
+theme: cosmo
+execute: 
+  warning: false
+  message: false
+  echo: false
+---
+
+## Service costs
+
+```{r}
+
+#Libraries used
+
+library(properties)
+library(DBI)
+library(odbc)
+library(tidyverse)
+library(lubridate)
+library(wesanderson)
+library(plotly)
+library(ggplot2)
+library(viridis)
+library(ggsci)
+library(scales)
+
+# rename template.config.properties to config.properties and fill out login data
+config <- read.properties('config.properties')
+
+con <- dbConnect(
+  odbc(),
+  driver = "SQL Server",
+  uid = config$user,
+  pwd = config$pass,
+  server = 'mssql-2017.labs.wmi.amu.edu.pl',
+  database = 'iliagil'
+)
+
+#SQL query for service costs
+costs <- dbGetQuery(
+  con,
+  'SELECT
+   D.calendar_DATE,
+   S.service_cost
+   FROM dim_calendar AS D
+   RIGHT OUTER JOIN fact_service AS S
+   ON S.service_date_id = D.DATE_id'
+)
+
+#SQL query for service operations - used in the section "Number of services"
+costs_with_producer <- dbGetQuery(
+   con,
+  'SELECT
+   C.calendar_DATE,
+   FS.service_cost,
+   DC.producer,
+   S.service_type_name
+   FROM fact_service AS FS
+   LEFT JOIN dim_calendar AS C
+   ON FS.service_date_id = C.DATE_id
+   LEFT JOIN dim_car AS DC
+   ON DC.car_id = FS.car_id
+   LEFT JOIN dim_service_type AS S
+   ON S.service_type_id = FS.service_type_id')
+
+#Data frame used to create charts for service costs (service costs by date)
+costs_year_month <- costs %>%
+  as_tibble() %>%
+  mutate(
+    year = year(calendar_DATE),
+    month = month(calendar_DATE,
+                  label = TRUE, 
+                  locale = "English_United States"),
+    year_month = paste0(month, ' ', year)
+  ) %>%
+  group_by(year, month) %>%
+  summarise(cost_sum = sum(service_cost), n_count = n()) %>%
+  select(year, month, cost_sum, n_count) %>%
+  arrange(year, month) %>%
+  ungroup()
+```
+
+::: panel-tabset
+#### Service costs by month
+
+```{r}
+
+#Define color scale for bar chart
+cc <- scales::seq_gradient_pal("lightblue", "blue")(seq(0,1,length.out=7))
+
+options(scipen = 999)
+
+#Create bar chart (dodged): x=month, y=costs, grouped by year
+fig1 <- costs_year_month %>%
+  ggplot(aes(x = month, y = cost_sum, fill = as.factor(year))) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  scale_fill_manual(values = cc) +
+  scale_y_continuous(labels = scales::comma)
+
+#Define labels, legend etc.
+fig1 <- fig1 + 
+  labs(x = "Month", y = "Costs [PLN]") +
+  ylim(0, 300000) + 
+  ggtitle("Service costs by month") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  guides(fill = guide_legend(title = "Year", 
+                             title.position = "top")) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(colour = 'grey90', size = 0.5))
+
+fig1
+
+```
+
+#### Service costs by year
+
+```{r}
+
+options(scipen = 999)
+
+costs_year <- costs_year_month %>%
+  group_by(year) %>%
+  summarise(cost_sum = sum(cost_sum)) %>%
+  select(year, cost_sum) 
+
+#Create line chart: x=year, y=costs  
+fig2 <- costs_year %>%
+  ggplot(aes(x = year, y = cost_sum)) +
+  geom_line(color = "#0099f9", size = 2) +
+  geom_point(color = "#0099f9", size = 4) +
+  scale_x_continuous(
+    labels = unique(costs_year_month$year),
+    breaks = unique(costs_year_month$year)
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 600000, 50000)
+  )
+
+fig2 + 
+  labs(x = "Year", y = "Costs [PLN]") +
+  ggtitle("Service costs by year") +
+  theme(plot.title = element_text(hjust = 0.5),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(colour = 'grey90', size = 0.5))
+
+```
+
+#### Service costs by producer
+
+```{r}
+
+#Boxplot - service costs by producer
+costs_with_producer %>%
+  plot_ly(
+  type = 'box',
+  y = ~ service_cost,
+  color = ~ producer,
+  colors = 'Dark2'
+)
+```
+:::
+
+```{r}
+
+#Index of maximum value in the dataframe
+max_index = which(costs_year$cost_sum == max(costs_year$cost_sum))
+
+#Top 2 producers with highest service costs
+top_costs <- costs_with_producer %>%
+  group_by(producer) %>%
+  summarise(med = median(service_cost)) %>%
+  arrange(desc(med)) %>%
+  top_n(2)
+```
+
+::: {style="text-align: justify"}
+Service cost is the highest for `r costs_year[max_index, ]$year` (`r costs_year[max_index, ]$cost_sum` PLN). Moreover, month by month comparison for each year clearly shows that irrespective of year service costs obtain the highest value in march.<br> Boxplot indicates that median of service costs is the highest for `r top_costs[1,1]`(`r top_costs[1,2]` PLN) and `r top_costs[2,1]` (`r top_costs[2,2]` PLN).
+:::
+
+<br>
+
+```{r}
+library(DT)
+
+#Table containing data for service costs
+DT:::datatable(costs_year_month[,c(1,2,3,4)], class = 'cell-border stripe', colnames = c('Year', 'Month', 'Service costs [PLN]', 'Number of services'), options = list(columnDefs = list(list(className = 'dt-center', targets = '_all'))))
+```
+
+<br>
+
+```{r}
+
+library(plotly)
+library(lubridate)
+library(forcats)
+
+#Data frame used to create chart for number of service operations (service operations by date)
+costs_year_month <- costs_year_month %>%
+  mutate(year_month2 = lubridate:::ym(paste0(year, '-', month)),
+         year_month1 = as.factor(paste0(year, '-', month)))
+
+```
+
+## Number of services
+
+::: panel-tabset
+#### Services by date
+
+```{r}
+
+#Service operations by date - line chart
+fig <- plot_ly(costs_year_month,
+               type = 'scatter',
+               mode = 'lines+markers') %>%
+  add_trace(
+    x = ~ fct_reorder(year_month1, year_month2),
+    y = ~ n_count,
+    text = ~ n_count,
+    name = '',
+    hoverinfo = 'text',
+    hovertemplate = paste("Services: %{text}",
+                          "<br>Date: %{x}"),
+    showlegend = F
+  ) %>%
+  layout(
+    title = 'Number of services carried out',
+    xaxis = list(title = 'Date', tickangle = 90),
+    yaxis = list (title = 'Number of services')
+  )
+
+fig
+
+```
+
+#### Services by date for each producer
+
+```{r}
+
+#Data frame used to create horizontal bar chart with producer ranking (number of service operations by producer)
+costs_with_producer_mod <- costs_with_producer %>%
+  as_tibble() %>%
+  mutate(
+    year = year(calendar_DATE),
+    month = month(calendar_DATE, label = TRUE, locale =
+                    "English_United States"),
+    year_month2 = lubridate:::ym(paste0(year, '-', month)),
+    year_month1 =as.factor(paste0(year, ' ', month))
+  ) %>%
+  group_by(year_month1, year_month2, producer) %>%
+  summarise(cost_sum = sum(service_cost),
+            n_count = n()) %>%
+  select(year_month2, year_month1, producer, cost_sum, n_count) %>%
+  arrange(year_month2) %>%
+  ungroup()
+
+```
+
+```{r}
+
+#List of producers
+producers = unique(costs_with_producer_mod$producer)
+
+#Figure for each producer is kept in the list
+fig = list()
+n = length(producers)
+
+#Create subplot for each producer
+while (n > 0)
+{
+  fig[[n]] <- plot_ly(
+    costs_with_producer_mod %>%
+      filter(producer %in% producers[[n]]),
+    x = ~ fct_reorder(year_month1, year_month2),
+    y = ~ n_count,
+    name = ~ producer,
+    type = 'scatter',
+    mode = 'lines+markers'
+  ) %>%
+    layout(
+      title = 'Number of services carried out',
+      xaxis = list(title = 'Date'),
+      yaxis = list (title = 'Number of services')
+    )
+    
+  n = n - 1
+}
+
+#Join all subplots for each producers
+subplot(fig[[1]],
+        fig[[2]],
+        fig[[3]], 
+        fig[[4]], 
+        fig[[5]],
+        fig[[6]],
+        fig[[7]],
+        fig[[8]],
+        nrows = 4, shareX = TRUE)
+```
+
+#### Services for each producer
+
+```{r}
+
+#Bar chart with rank of producers
+costs_with_producer %>%
+  select(-calendar_DATE, -service_cost) %>%
+  group_by(producer) %>%
+  mutate(total = n()) %>%
+  group_by(producer, service_type_name) %>%
+  mutate(n = n(),
+         frac = n()/total) %>%
+  plot_ly(
+    x = ~ n,
+    y = ~ fct_reorder(as.factor(producer), n),
+    color = ~ service_type_name,
+    colors = 'Paired',
+    type = 'bar',
+    orientation = 'h',
+    text = ~ total,
+    hovertemplate = 'Producer: %{y}<br>Services: %{x}') %>%
+  layout(xaxis = list(title = '',
+                      showline = F, 
+                      showgrid = T, 
+                      showticklabels = F,
+                      zerolinecolor = 'white'), 
+         yaxis = list(title = 'Producer',
+                      showline = F, 
+                      showgrid = T, 
+                      showticklabels = T),
+         barmode = 'stack',
+         legend = list(orientation = 'h', 
+                       itemclick = FALSE),
+         title = 'Number of services carried out') 
+```
+:::
+
+::: {style="text-align: justify"}
+Toyota has the largest number of services. Approximately 50% of services is related to tire change and the second 50% to oil service (tire change : oil service = 1 : 1). <br> Number of services by date depicts similar pattern for all producers - high number of services in march, low number of services in other months.
+:::
