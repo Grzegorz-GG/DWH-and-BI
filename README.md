@@ -60,11 +60,11 @@ Below there is a preview of dashboards in Tableau. Tableau files (*.twb, *.hyper
 <p aling="justify">Report uses R/Quarto, ggplot2 and plotly. It summarizes the results for service costs and number of service operations. Code can be found in the repository.</p>
 
 <p align="center">
-<img src="R/JPG/service_costs.JPG">
+<img src="R/JPG/service_costs .JPG">
 </p>
 
 <p align="center">
-<img src="R/JPG/service_costs2.JPG">
+<img src="R/JPG/service_costs 2.JPG">
 </p>
 
 <p align="center">
