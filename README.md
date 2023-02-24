@@ -7,7 +7,7 @@ Project consists of the following three parts:
     + <p align="justify"> Who are customers of our car rental company i.e where they come from, where they rent cars, how old they are?</p>
     + <p align="justify"> What type of transactions they perform i.e. type of rented cars, rental duration, age/production year of rented cars?</p>
     + <p align="justify"> Performing analysis of returning customers (def: <b>returning customer</b> - <i>customer who rented a car more than two times</i>).</p>
-+ <p align="justify"> Creating report in R/Quarto with analysis of service costs/qty of service operations (charts prepared using plotly and ggplot2). </p>
++ <p align="justify"> Creating report in R/Quarto with analysis of service costs/number of service operations (charts prepared using plotly and ggplot2). </p>
 
 ### Data warehouse schema
 
@@ -59,6 +59,10 @@ Below there is a preview of dashboards in Tableau. Tableau files (*.twb, *.hyper
 
 <p align="center">
 <img src="R/JPG/service_costs.JPG">
+</p>
+
+<p align="center">
+<img src="R/JPG/service_costs2.JPG">
 </p>
 
 <p align="center">
