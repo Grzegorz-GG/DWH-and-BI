@@ -9,6 +9,8 @@ Project consists of the following three parts:
     + <p align="justify"> Performing analysis of returning customers (def: <b>returning customer</b> - <i>customer who rented a car more than two times</i>).</p>
 + <p align="justify"> Creating report in R/Quarto with analysis of service costs/number of service operations (charts prepared using plotly and ggplot2). </p>
 
+Tech used: T-SQL, SSIS, R, Tableau.
+
 ### Data warehouse schema
 
 1. Entity relationships diagram of the source database (*wheelie* database) is shown below. 
@@ -35,7 +37,7 @@ GROUP BY inventory_id<br>
  
 <br>
 
-<p aling="justify">Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship. Date table dim_date (not shown above) is populated directly from a SQL script.</p>
+<p align = "justify">Hash keys are hold in dim_equipment_group. Data warehouse tables dim_equipment_group and dim_equipment_bridge are provided to avoid many to many relationship. Date table dim_date (not shown above) is populated directly from a SQL script.</p>
 
 ### Tableau dashboards
 
